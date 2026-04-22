@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRTS - Rhodes Island Terminal Service</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root {
+    --bg: #EBEBEB;
+    --black: #000000;
+    --white: #FFFFFF;
+    --gray: #999999;
+    --diamond-color: #D8D8D8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--black);
+    overflow: hidden;
+    width: 100vw; height: 100vh;
+    position: relative;
+    user-select: none;
+  }
+
+  /* Background Diamonds */
+  .diamond-container {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(80vw, 80vh); height: min(80vw, 80vh);
+    pointer-events: none;
+  }
+  .diamond {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border: 1px solid var(--diamond-color);
+  }
+  .diamond-1 { width: 95%; height: 95%; }
+  .diamond-2 { width: 88%; height: 88%; }
+  .diamond-3 { width: 75%; height: 75%; border-color: #CCC; }
+
+  /* Fixed Decorators */
+  .top-right {
+    position: absolute; top: 30px; right: 35px;
+    display: flex; align-items: center; gap: 8px; opacity: 0;
+  }
+  .top-right span { font-size: 11px; letter-spacing: 3px; font-weight: 500; }
+  .top-right .dot { width: 8px; height: 8px; background: var(--black); }
+
+  .bottom-center {
+    position: absolute; bottom: 25px; left: 50%;
+    transform: translateX(-50%); text-align: center; opacity: 0;
+  }
+  .bottom-text-1 { font-size: 10px; letter-spacing: 4px; margin-bottom: 4px; font-weight: 500; }
+  .bottom-text-1 .rhodes { font-weight: 700; }
+  .bottom-text-2 { font-size: 8px; letter-spacing: 3px; color: var(--gray); }
+  .bottom-line { display: flex; align-items: center; justify-content: center; }
+  .bottom-line::before, .bottom-line::after { content: ''; height: 1px; width: 120px; background: var(--black); }
+  .bottom-diamonds { display: flex; gap: 12px; margin: 0 8px; }
+  .b-dia { width: 6px; height: 6px; transform: rotate(45deg); }
+  .b-dia.black { background: var(--black); }
+  .b-dia.white { background: var(--white); border: 1px solid var(--black); }
+  .b-dia.hollow { border: 1px solid var(--black); }
+
+  /* PRTS Logo */
+  .prts-logo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); opacity: 0;
+  }
+  .prts-main { font-size: 52px; font-weight: 900; letter-spacing: 4px; line-height: 1; }
+  .prts-sub { display: flex; gap: 6px; margin-top: 2px; align-items: baseline; }
+  .prts-sub span { font-size: 10px; letter-spacing: 1.5px; font-weight: 500; }
+  .prts-os { background: var(--black); color: var(--white); padding: 1px 4px; font-weight: 700; }
+
+  /* Glitch Overlay */
+  .glitch-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 100; opacity: 0;
+  }
+  .glitch-line {
+    position: absolute; left: 0; background: var(--black); opacity: 0.8;
+  }
+
+  /* Login Area */
+  .login-area {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); opacity: 0;
+  }
+  .login-field { display: flex; align-items: baseline; margin-bottom: 8px; min-height: 22px; }
+  /* 已优化：宽度增加到 90px 解决重叠 */
+  .login-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; width: 90px; flex-shrink: 0; }
+  .login-value { font-size: 12px; letter-spacing: 1.5px; font-weight: 500; }
+  .login-forgot { font-size: 7px; letter-spacing: 2px; margin-top: 8px; color: var(--gray); margin-left: 105px; opacity: 0;}
+  .cursor {
+    display: inline-block; width: 2px; height: 12px; background: var(--black);
+    margin-left: 4px; opacity: 0; vertical-align: middle;
+  }
+
+  /* Popups */
+  .black-square {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 60px; height: 60px; background: var(--black); opacity: 0;
+  }
+  .access-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-size: 72px; font-weight: 900; letter-spacing: 12px; opacity: 0;
+  }
+  .please-login-banner {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); display: flex; align-items: center; opacity: 0;
+  }
+  .banner-text {
+    background: var(--black); color: var(--white);
+    font-size: 42px; font-weight: 700; letter-spacing: 6px; padding: 12px 30px;
+  }
+
+  /* Progress Bar */
+  .progress-container {
+    position: absolute; top: 50%; left: 25%; right: 25%;
+    transform: translateY(-50%); opacity: 0;
+  }
+  .progress-bar-bg { width: 100%; height: 20px; background: transparent; position: relative; }
+  .progress-bar-fill { height: 100%; background: var(--black); width: 0%; position: relative; overflow: hidden; }
+  .progress-hatching {
+    position: absolute; right: 0; top: -5px; bottom: -5px; width: 50px;
+  }
+  .hatch-line { position: absolute; width: 2px; height: 150%; background: var(--bg); transform: rotate(25deg); }
+  .progress-percent {
+    position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%);
+    font-size: 20px; font-weight: 700; letter-spacing: 2px;
+  }
+
+  /* Welcome Text 优化部分 */
+  /* .welcome-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px; font-weight: 700; 
+    letter-spacing: 0;  修复：移除父级间距 
+    opacity: 0; white-space: nowrap;
+  } */
+  /* .char-slot { 
+    display: inline-block; 
+    width: 18px; 修复：设定固定宽度确保间距完美统一
+    text-align: center; 
+  } */
+  
+  .welcome-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    /* 改用等宽字体组合 */
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 50px; 
+    font-weight: 700; 
+    letter-spacing: 2px; /* 可以稍微加点字间距增加设计感 */
+    opacity: 0; white-space: nowrap;
+  }
+  .char-slot { 
+    display: inline-block; 
+    width: 1.2ch; /* 在等宽字体下，1ch代表正好一个字符的宽度 */
+    text-align: center; 
+  }
+</style>
+</head>
+<body>
+
+<div class="diamond-container">
+  <div class="diamond diamond-1"></div><div class="diamond diamond-2"></div><div class="diamond diamond-3"></div>
+</div>
+
+<div class="top-right" id="topRight"><span>POWERED BY RHODES ISLAND</span><div class="dot"></div></div>
+<div class="bottom-center" id="bottomCenter">
+  <div class="bottom-text-1">PRIMITIVE <span class="rhodes">RHODES ISLAND</span> TERMINAL SERVICE</div>
+  <div class="bottom-text-2">SYSTEM [OS]</div>
+  <div class="bottom-line">
+    <div class="bottom-diamonds">
+      <div class="b-dia black"></div><div class="b-dia hollow"></div><div class="b-dia white"></div><div class="b-dia hollow"></div><div class="b-dia black"></div>
+    </div>
+  </div>
+</div>
+
+<div class="prts-logo" id="prtsLogo">
+  <div class="prts-main">PRTS</div>
+  <div class="prts-sub"><span>SYNTHESIZE INFORMATION</span><span class="prts-os">OS</span><span>ANALYSIS</span></div>
+</div>
+
+<div class="glitch-overlay" id="glitchOverlay"></div>
+
+<div class="login-area" id="loginArea">
+  <div class="login-field">
+    <span class="login-label">USERNAME:</span><span class="login-value" id="usernameValue"></span><span class="cursor" id="cursor1"></span>
+  </div>
+  <div class="login-field">
+    <span class="login-label">PASSWORD:</span><span class="login-value" id="passwordValue"></span><span class="cursor" id="cursor2"></span>
+  </div>
+  <div class="login-forgot" id="loginForgot">FROGOT YOUR PASSWORD?</div>
+</div>
+
+<div class="black-square" id="blackSquare"></div>
+<div class="access-text" id="accessText">ACCESS</div>
+
+<div class="please-login-banner" id="pleaseLoginBanner">
+  <div class="prts-logo" style="position:relative; top:auto; left:auto; transform:none; opacity:1; margin-right:20px;">
+    <div class="prts-main" style="font-size:40px;">PRTS</div>
+    <div class="prts-sub" style="font-size:8px;"><span>SYNTHESIZE INFORMATION</span><span class="prts-os" style="font-size:8px;">OS</span></div>
+  </div>
+  <div class="banner-text">PLEASE LOG IN</div>
+</div>
+
+<div class="progress-container" id="progressContainer">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressFill">
+      <div class="progress-hatching" id="progressHatching"></div>
+    </div>
+  </div>
+  <div class="progress-percent" id="progressPercent">0%</div>
+</div>
+
+<div class="welcome-text" id="welcomeText"></div>
+
+<script>
+// Build hatching pattern for progress bar
+const hatching = document.getElementById('progressHatching');
+for (let i = 0; i < 10; i++) {
+  const line = document.createElement('div');
+  line.className = 'hatch-line';
+  line.style.left = (i * 6) + 'px';
+  hatching.appendChild(line);
+}
+
+// Global Timeline
+const tl = gsap.timeline({ delay: 0.5 });
+
+// 1. Initial UI Boot
+tl.to(['#topRight', '#bottomCenter'], { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
+
+// Flash center lines
+const line1 = document.createElement('div'); const line2 = document.createElement('div');
+line1.style.cssText = line2.style.cssText = 'width:0;height:1px;background:#000;position:absolute;left:50%;transform:translateX(-50%);z-index:1;';
+line1.style.top = '48%'; line2.style.top = '52%';
+document.body.appendChild(line1); document.body.appendChild(line2);
+
+tl.to(line1, { width: 80, duration: 0.15, ease: 'power1.out' }, 0.5)
+  .to(line1, { opacity: 0, duration: 0.1 }, 0.7)
+  .to(line2, { width: 80, duration: 0.15, ease: 'power1.out' }, 0.6)
+  .to(line2, { opacity: 0, duration: 0.1 }, 0.8);
+
+tl.to('#prtsLogo', { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0.9);
+
+// 2. Glitch & Shift
+tl.add(() => {
+  const overlay = document.getElementById('glitchOverlay');
+  overlay.style.opacity = 1;
+  for(let i=0; i<6; i++) {
+    const l = document.createElement('div');
+    l.className = 'glitch-line';
+    l.style.top = Math.random()*100 + '%'; l.style.height = (1+Math.random()*4)+'px'; l.style.width = (30+Math.random()*70)+'%';
+    overlay.appendChild(l);
+  }
+  gsap.to(overlay, {opacity: 0, duration: 0.15, delay: 0.1, onComplete: () => overlay.innerHTML=''});
+}, 2.5)
+.set('#prtsLogo', { x: -200 }, 2.6)
+.set('#loginArea', { x: 50, opacity: 1 }, 2.6);
+
+// 3. Typewriter Effect
+const typeObj = { uLen: 0, pLen: 0 };
+const uText = "Doctor"; const pText = "************";
+
+tl.set('#cursor1', { opacity: 1 }, 2.8)
+  .to(typeObj, { 
+    uLen: uText.length, duration: 0.6, ease: `steps(${uText.length})`,
+    onUpdate: () => document.getElementById('usernameValue').textContent = uText.substring(0, Math.ceil(typeObj.uLen))
+  }, 3.0)
+  .set('#cursor1', { opacity: 0 }, 3.8)
+  .set('#cursor2', { opacity: 1 }, 4.0)
+  .to(typeObj, {
+    pLen: pText.length, duration: 0.8, ease: `steps(${pText.length})`,
+    onUpdate: () => document.getElementById('passwordValue').textContent = pText.substring(0, Math.ceil(typeObj.pLen))
+  }, 4.2)
+  .to('#loginForgot', { opacity: 1, duration: 0.3 }, 5.2)
+  .set('#cursor2', { opacity: 0 }, 6.5);
+
+// 4. Authorization
+tl.to(['#loginArea', '#prtsLogo'], { opacity: 0, duration: 0.1 }, 7.0)
+  .to('#blackSquare', { opacity: 1, scale: 1.2, duration: 0.2, ease: 'power2.out' }, 7.2)
+  .to('#blackSquare', { opacity: 0, scale: 2, duration: 0.15 }, 7.5)
+  .fromTo('#accessText', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.1 }, 7.6)
+  .to('#accessText', { opacity: 0, scale: 1.1, duration: 0.1 }, 8.2)
+  .fromTo('#pleaseLoginBanner', { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.2 }, 8.4)
+  .to('#pleaseLoginBanner', { opacity: 0, duration: 0.15 }, 9.5);
+
+// 5. Progress Bar
+const progObj = { val: 0 };
+tl.to('#progressContainer', { opacity: 1, duration: 0.2 }, 9.7)
+  .to(progObj, {
+    val: 100, duration: 4.5, ease: 'power2.inOut',
+    onUpdate: () => {
+      const p = Math.round(progObj.val);
+      document.getElementById('progressFill').style.width = p + '%';
+      document.getElementById('progressPercent').textContent = p + '%';
+    }
+  }, 10.0)
+  .to('#progressContainer', { opacity: 0, duration: 0.3 }, 15.5);
+
+// 6. Welcome Text Scramble (修复间距)
+const targetStr = "WELCOME BACK DOCTOR";
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const welcomeEl = document.getElementById('welcomeText');
+
+targetStr.split('').forEach(c => {
+  const span = document.createElement('span');
+  span.className = 'char-slot';
+  welcomeEl.appendChild(span);
+});
+
+const scrambleObj = { progress: 0 };
+tl.to('#welcomeText', { opacity: 1, duration: 0.1 }, 15.8)
+  .to(scrambleObj, {
+    progress: 1, duration: 1.5, ease: 'none',
+    onUpdate: () => {
+      const p = scrambleObj.progress;
+      Array.from(welcomeEl.children).forEach((span, i) => {
+        if (targetStr[i] === ' ') { span.textContent = '\u00A0'; return; }
+        const threshold = (i / targetStr.length) * 0.8; 
+        if (p > threshold + Math.random()*0.15) {
+          span.textContent = targetStr[i];
+        } else {
+          span.textContent = chars[Math.floor(Math.random() * chars.length)];
+        }
+      });
+    }
+  }, 15.8);
+
+</script>
+</body>
+</html>
