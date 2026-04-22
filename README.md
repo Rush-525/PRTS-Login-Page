@@ -3,9 +3,10 @@
 动画目前有2版:
 1. PRTS.html
 2. PRTS2.html
-<br>
-登录表单有静态表单:
-1. PRTS-OS.html
-<br>
-动态表单:
-1. PRTS-OS2.html
+
+登录表单有:<br>
+静态表单:<br>
+- PRTS-OS.html
+
+动态表单:<br>
+- PRTS-OS2.html
