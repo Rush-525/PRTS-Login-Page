@@ -6,7 +6,7 @@
 
 登录表单有:<br>
 静态表单:<br>
-- PRTS-OS.html
+- PRTS-Static.html
 
 动态表单:<br>
-- PRTS-OS2.html
+- PRTS-Dynamic.html
