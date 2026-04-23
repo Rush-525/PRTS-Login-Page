@@ -23,11 +23,12 @@
     /* 开场线段动画 */
     .intro-lines {
         position: absolute;
-        width: 60px;
+        width: 220px;
         height: 1px;
         background: transparent;
         z-index: 5;
-        transition: all 0.4s ease-out;
+        /* transition: all 0.3s ease-out; */
+        transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .intro-lines::before, .intro-lines::after {
         content: '';
@@ -35,21 +36,22 @@
         width: 100%;
         height: 1px;
         background: #000;
-        transition: transform 0.4s ease-in-out;
+        /* transition: transform 0.3s ease-in-out; */
+        transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .intro-lines.step1::before { transform: translateY(0); }
     .intro-lines.step1::after { transform: translateY(0); }
-    .intro-lines.step2::before { transform: translateY(-15px); }
-    .intro-lines.step2::after { transform: translateY(15px); }
+    .intro-lines.step2::before { transform: translateY(-60px); }
+    .intro-lines.step2::after { transform: translateY(60px); }
     .intro-lines.hidden { opacity: 0; }
 
     /* 背景菱形 */
     .diamond-bg {
         position: absolute;
-        width: 58vw;
-        height: 58vw;
+        width: 45vw;
+        height: 45vw;
         background-color: #dfdfdf;
-        border: 20px solid #f2f2f2;
+        border: 30px solid #f2f2f2;
         box-sizing: border-box;
         transform: rotate(45deg) scale(0);
         z-index: 0;
@@ -87,8 +89,8 @@
     /* 顶部文字 */
     .top-right {
         position: absolute;
-        top: 5%;
-        right: 5%;
+        top: 3%;
+        right: 3%;
         font-size: 13px;
         /* letter-spacing: 1.5px; */
         opacity: 0;
@@ -134,7 +136,7 @@
 /* 修改后的 Logo 区域 */
     .logo-deco {
         width: 0;
-        height: 85px; /* 文字变成上下两排后总高度增加，拉长左侧的黑线进行匹配 */
+        height: 75px; /* 文字变成上下两排后总高度增加，拉长左侧的黑线进行匹配 */
         background: black;
         transition: width 0.4s;
         margin-right: 12px;
@@ -147,9 +149,9 @@
         align-items: flex-start; /* 整体向左对齐 */
     }
     .logo-main {
-        font-size: 64px;
+        font-size: 80px;
         font-weight: 900;
-        letter-spacing: -3px;
+        /* letter-spacing: -3px; */
         line-height: 0.8;
     }
     .logo-sub-group { 
@@ -332,7 +334,8 @@
         <div class="top-right" id="topRight">POWERED BY RHODES ISLAND</div>
 
         <div class="logo-wrapper" id="logoWrapper">
-            <div class="logo-deco" id="logoDeco"></div>
+            <!-- 隐藏deco,同步注释js部分 -->
+            <!-- <div class="logo-deco" id="logoDeco"></div> -->
             <div class="logo-text-group" id="logoGroup">
                 <div class="logo-main">PRTS</div>
                 <div class="logo-sub-group">
@@ -381,37 +384,43 @@
 
 <script>
     const timeline = [
-        // 0.0s - 中线出现
-        { time: 0, action: () => document.getElementById('introLines').classList.add('step1') },
-        // 0.5s - 线分开形成矩形
-        { time: 500, action: () => document.getElementById('introLines').classList.add('step2') },
-        // 1.0s - 菱形展开，中线消失
-        { time: 1000, action: () => {
-            document.getElementById('introLines').classList.add('hidden');
+        // 0.2s - 菱形展开
+        { time: 200, action: () => {
+            // document.getElementById('introLines').classList.add('hidden');
             document.getElementById('diamondBg').classList.add('active');
             document.getElementById('innerBorder').classList.add('active');
         }},
+
+        // 0.5s - 中线出现
+        { time: 500, action: () => document.getElementById('introLines').classList.add('step1') },
+        // 0.6s - 线分开形成矩形
+        { time: 600, action: () => document.getElementById('introLines').classList.add('step2') },
+        
+
+
         // 2.0s - Logo 出现
-        { time: 2000, action: () => {
+        { time: 800, action: () => {
             document.getElementById('logoGroup').classList.add('fade-in');
-            document.getElementById('logoDeco').style.width = '8px';
+            // document.getElementById('logoDeco').style.width = '2px';
         }},
         // 3.0s - Logo 左移，周边文字浮现
-        { time: 3000, action: () => {
+        { time: 2000, action: () => {
             // 将原来的 -220px 加大到 -380px，给中间的表单腾出足够空间
-            document.getElementById('logoWrapper').style.transform = 'translateX(-480px)';
+            document.getElementById('logoWrapper').style.transform = 'translateX(-580px)';
+            document.getElementById('introLines').style.transform = 'translateX(-580px)';
+            
             document.getElementById('topRight').classList.add('fade-in');
             document.getElementById('bottomText').classList.add('fade-in');
         }},
         // 4.0s - 表单出现，录入用户名
-        { time: 4000, action: () => {
+        { time: 3000, action: () => {
             document.getElementById('loginForm').classList.add('fade-in');
             typeText('usernameVal', 'Doctor', 100); 
         }},
         // 5.5s - 录入密码
-        { time: 5500, action: () => typeDots('passwordVal', 12, 80) },
+        { time: 4500, action: () => typeDots('passwordVal', 12, 80) },
         // 7.5s - 黑块覆盖密码区 (Glitch转场)
-        { time: 7500, action: () => {
+        { time: 6500, action: () => {
             const glitch = document.getElementById('glitchBox');
             glitch.style.opacity = '1';
             glitch.style.transform = 'scale(1.2)';
